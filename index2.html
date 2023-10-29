@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .timeline {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ddd;
+      height: 120px;
+      position: relative;
+    }
+
+    .track {
+      flex-grow: 1;
+      height: 100%;
+      background-color: #f2f2f2;
+      position: relative;
+    }
+
+    .keyframe {
+      position: absolute;
+      background-color: #3498db;
+      width: 5px;
+      height: 100%;
+    }
+
+    #playback-marker {
+      position: absolute;
+      background-color: red;
+      width: 2px;
+      height: 100%;
+    }
+
+    #time-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      width: 100%;
+      font-size: 12px;
+    }
+
+    #controls {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="timeline" id="timeline">
+    <div class="track" id="track1"></div>
+    <div class="track" id="track2"></div>
+    <div id="playback-marker"></div>
+  </div>
+
+  <div id="time-scale"></div>
+
+  <div id="controls">
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+    <button id="stop">Stop</button>
+  </div>
+
+  <script>
+    const track1 = document.getElementById("track1");
+    const track2 = document.getElementById("track2");
+    const playbackMarker = document.getElementById("playback-marker");
+    const timeScale = document.getElementById("time-scale");
+    const playButton = document.getElementById("play");
+    const pauseButton = document.getElementById("pause");
+    const stopButton = document.getElementById("stop");
+
+    let animationFrame = null;
+    let currentTime = 0;
+
+    playButton.addEventListener("click", playAnimation);
+    pauseButton.addEventListener("click", pauseAnimation);
+    stopButton.addEventListener("click", stopAnimation);
+
+    // Create timestamps for the time scale
+    const duration = 10; // Duration of the animation in seconds
+    const timestamps = Array.from({ length: duration + 1 }, (_, i) => i);
+
+    // Populate time scale with timestamps
+    timestamps.forEach((timestamp) => {
+      const timeLabel = document.createElement("div");
+      timeLabel.textContent = `${timestamp}s`;
+      timeScale.appendChild(timeLabel);
+    });
+
+    // Add a click event listener to add keyframes
+    let isAddingKeyframe = false;
+    timeline.addEventListener("mousedown", () => {
+      isAddingKeyframe = true;
+    });
+    timeline.addEventListener("mouseup", () => {
+      isAddingKeyframe = false;
+    });
+
+    timeline.addEventListener("mousemove", (event) => {
+      if (isAddingKeyframe) {
+        const rect = timeline.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const percentage = (x / rect.width) * 100;
+        addKeyframe(percentage, duration);
+      }
+    });
+
+    function addKeyframe(percentage, duration) {
+      const keyframe = document.createElement("div");
+      keyframe.classList.add("keyframe");
+      keyframe.style.left = percentage + "%";
+      track1.appendChild(keyframe);
+    }
+
+    function playAnimation() {
+      if (animationFrame === null) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+
+      function animate(timestamp) {
+        const delta = (timestamp - currentTime) / 1000;
+        currentTime = timestamp;
+
+        // Update the playback marker position
+        updatePlaybackMarker(delta, duration);
+
+        // Update the keyframes on the tracks
+        updateKeyframe(track1, delta, duration);
+        updateKeyframe(track2, delta, duration);
+
+        if (delta < duration) {
+          animationFrame = requestAnimationFrame(animate);
+        } else {
+          stopAnimation();
+        }
+      }
+    }
+
+    function pauseAnimation() {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+
+    function stopAnimation() {
+      currentTime = 0;
+      pauseAnimation();
+      resetKeyframes(track1);
+      resetKeyframes(track2);
+      resetPlaybackMarker();
+    }
+
+    function updatePlaybackMarker(delta, duration) {
+      const left = (delta / duration) * 100;
+      playbackMarker.style.left = left + "%";
+    }
+
+    function resetPlaybackMarker() {
+      playbackMarker.style.left = "0%";
+    }
+
+    function updateKeyframe(track, delta, duration) {
+      const keyframes = track.getElementsByClassName("keyframe");
+      for (const keyframe of keyframes) {
+        const left = parseFloat(keyframe.style.left) || 0;
+        left += (delta / duration) * 100;
+        keyframe.style.left = left + "%";
+      }
+    }
+
+    function resetKeyframes(track) {
+      const keyframes = track.getElementsByClassName("keyframe");
+      for (const keyframe of keyframes) {
+        keyframe.style.left = "0%";
+      }
+    }
+  </script>
+</body>
+</html>
+
+

@@ -10,11 +10,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-Timeline.prototype.initGUI = function() {
+Timeline.prototype.initGUI = function () {
   var self = this;
 
-  this.trackLabelWidth = 108;
-  this.trackLabelHeight = 20;
+  this.trackLabelWidth = 152;
+  this.trackLabelHeight = 28;
   this.tracksScrollWidth = 16;
   this.tracksScrollHeight = 0;
   this.tracksScrollThumbPos = 0;
@@ -25,7 +25,7 @@ Timeline.prototype.initGUI = function() {
   this.timeScrollThumbPos = 0;
   this.timeScrollThumbWidth = 0;
   this.timeScrollX = 0;
-  this.headerHeight = 30;
+  this.headerHeight = 40;
   this.canvasHeight = 200;
   this.draggingTime = false;
   this.draggingTracksScrollThumb = false;
@@ -34,8 +34,15 @@ Timeline.prototype.initGUI = function() {
   this.draggingTimeScale = false;
   this.selectedKeys = [];
   this.timeScale = 1;
-
   this.trackNameCounter = 0;
+  this.timelineEndKey = null; //used to dynamically extend timeline
+  this.displayableTracks = [];
+  this.timelineTracksColorPalette = [];
+
+
+  this.prepareFonts();
+  this.loadCssStyleSheet("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css") //fontawesome.
+  this.prepareTimelineTracksColorPallete();
   this.initTracks();
   this.load();
 
@@ -55,7 +62,7 @@ Timeline.prototype.initGUI = function() {
   this.splitter.style.position = "fixed";
   this.splitter.style.left = "0px";
   this.splitter.style.bottom = (this.canvasHeight - 2) + "px";
-  this.splitter.addEventListener("mousedown", function() {
+  this.splitter.addEventListener("mousedown", function () {
     function mouseMove(e) {
       var h = (window.innerHeight - e.clientY);
       self.splitter.style.bottom = (h - 2) + "px";
@@ -67,7 +74,7 @@ Timeline.prototype.initGUI = function() {
     }
     function mouseUp(e) {
       document.body.removeEventListener("mousemove", mouseMove, false);
-     document.body.removeEventListener("mouseup", mouseUp, false);
+      document.body.removeEventListener("mouseup", mouseUp, false);
     }
     document.body.addEventListener("mousemove", mouseMove, false);
     document.body.addEventListener("mouseup", mouseUp, false);
@@ -76,33 +83,34 @@ Timeline.prototype.initGUI = function() {
 
   this.canvas = document.createElement("canvas");
   this.c = this.canvas.getContext("2d");
+  this.c.font = '14px Ariel';
   this.canvas.width = 0;
   this.container.appendChild(this.canvas);
 
 
   this.buildInputDialog();
 
-  this.canvas.addEventListener('click', function(event) {
-     self.onMouseClick(event);
+  this.canvas.addEventListener('click', function (event) {
+    self.onMouseClick(event);
   }, false);
-  this.canvas.addEventListener('mousedown', function(event) {
+  this.canvas.addEventListener('mousedown', function (event) {
     self.onMouseDown(event);
   }, false);
-  document.body.addEventListener('mousemove', function(event) {
+  document.body.addEventListener('mousemove', function (event) {
     self.onDocumentMouseMove(event);
   }, false);
-  this.canvas.addEventListener('mousemove', function(event) {
+  this.canvas.addEventListener('mousemove', function (event) {
     self.onCanvasMouseMove(event);
   }, false);
-  document.body.addEventListener('mouseup', function(event) {
+  document.body.addEventListener('mouseup', function (event) {
     self.onMouseUp(event);
   }, false);
-  this.canvas.addEventListener('dblclick', function(event) {
+  this.canvas.addEventListener('dblclick', function (event) {
     self.onMouseDoubleClick(event);
   }, false);
 };
 
-Timeline.prototype.onMouseDown = function(event) {
+Timeline.prototype.onMouseDown = function (event) {
   this.selectedKeys = [];
 
   var x = event.layerX;
@@ -143,7 +151,7 @@ Timeline.prototype.onMouseDown = function(event) {
   }
 };
 
-Timeline.prototype.onDocumentMouseMove = function(event) {
+Timeline.prototype.onDocumentMouseMove = function (event) {
   var x = event.layerX;
   var y = event.layerY;
 
@@ -154,7 +162,7 @@ Timeline.prototype.onDocumentMouseMove = function(event) {
     if (this.time > animationEnd) this.time = animationEnd;
   }
   if (this.draggingKeys) {
-    for(var i=0; i<this.selectedKeys.length; i++) {
+    for (var i = 0; i < this.selectedKeys.length; i++) {
       var draggedKey = this.selectedKeys[i];
       draggedKey.time = Math.max(0, this.xToTime(x));
       this.sortTrackKeys(draggedKey.track);
@@ -169,7 +177,7 @@ Timeline.prototype.onDocumentMouseMove = function(event) {
   }
 };
 
-Timeline.prototype.onCanvasMouseMove = function(event) {
+Timeline.prototype.onCanvasMouseMove = function (event) {
   var x = event.layerX;
   var y = event.layerY;
 
@@ -182,7 +190,8 @@ Timeline.prototype.onCanvasMouseMove = function(event) {
       this.tracksScrollThumbPos = Math.max(0, this.tracksScrollHeight - this.tracksScrollThumbHeight);
     }
     if (this.tracksScrollHeight - this.tracksScrollThumbHeight > 0) {
-      this.tracksScrollY = this.tracksScrollThumbPos/(this.tracksScrollHeight - this.tracksScrollThumbHeight);
+      //this.tracksScrollY = this.tracksScrollThumbPos/(this.tracksScrollHeight - this.tracksScrollThumbHeight);
+      this.tracksScrollY = this.tracksScrollThumbPos / (this.tracksScrollHeight - this.tracksScrollThumbHeight - 11.5); //to account for taller tracks.
     }
     else {
       this.tracksScrollY = 0;
@@ -197,7 +206,7 @@ Timeline.prototype.onCanvasMouseMove = function(event) {
       this.timeScrollThumbPos = Math.max(0, this.timeScrollWidth - this.timeScrollThumbWidth);
     }
     if (this.timeScrollWidth - this.timeScrollThumbWidth > 0) {
-      this.timeScrollX = this.timeScrollThumbPos/(this.timeScrollWidth - this.timeScrollThumbWidth);
+      this.timeScrollX = this.timeScrollThumbPos / (this.timeScrollWidth - this.timeScrollThumbWidth);
     }
     else {
       this.timeScrollX = 0;
@@ -205,7 +214,7 @@ Timeline.prototype.onCanvasMouseMove = function(event) {
   }
 };
 
-Timeline.prototype.onMouseUp = function(event) {
+Timeline.prototype.onMouseUp = function (event) {
   if (this.draggingTime) {
     this.draggingTime = false;
   }
@@ -223,28 +232,35 @@ Timeline.prototype.onMouseUp = function(event) {
   }
 };
 
-Timeline.prototype.onMouseClick = function(event) {
-  if (event.layerX < 1*this.headerHeight - 4 * 0 && event.layerY < this.headerHeight) {
+Timeline.prototype.onMouseClick = function (event) {
+  if (event.layerX < 1 * this.headerHeight - 4 * 0 && event.layerY < this.headerHeight) {
     this.play();
   }
-  if (event.layerX > 1*this.headerHeight - 4 * 0 && event.layerX < 2*this.headerHeight - 4 * 1 && event.layerY < this.headerHeight) {
+  if (event.layerX > 1 * this.headerHeight - 4 * 0 && event.layerX < 2 * this.headerHeight - 4 * 1 && event.layerY < this.headerHeight) {
     this.pause();
   }
 
-  if (event.layerX > 2*this.headerHeight - 4 * 1 && event.layerX < 3*this.headerHeight - 4 * 2 && event.layerY < this.headerHeight) {
+  if (event.layerX > 2 * this.headerHeight - 4 * 1 && event.layerX < 3 * this.headerHeight - 4 * 2 && event.layerY < this.headerHeight) {
     this.stop();
   }
 
-  if (event.layerX > 3*this.headerHeight - 4 * 2 && event.layerX < 4*this.headerHeight - 4 * 3 && event.layerY < this.headerHeight) {
+  if (event.layerX > 3 * this.headerHeight - 4 * 2 && event.layerX < 4 * this.headerHeight - 4 * 3 && event.layerY < this.headerHeight) {
     this.exportCode();
   }
 
   if (this.selectedKeys.length > 0 && !this.cancelKeyClick) {
     this.showKeyEditDialog(event.pageX, event.pageY);
   }
+
+  //track expansion and retraction
+  if (event.layerX < this.trackLabelWidth && event.layerY > this.headerHeight) {
+     const clickedTrack = this.getAnyTrackAt(event.layerX,event.layerY)
+     this.toggleTrackPropertiesExpansion(clickedTrack)
+     
+  }
 };
 
-Timeline.prototype.onMouseDoubleClick = function(event) {
+Timeline.prototype.onMouseDoubleClick = function (event) {
   var x = event.layerX;
   var y = event.layerY;
 
@@ -255,9 +271,9 @@ Timeline.prototype.onMouseDoubleClick = function(event) {
     var seconds = 0;
     var minutes = 0;
     var hours = 0;
-    if (timeArr.length > 0) seconds = parseInt(timeArr[timeArr.length-1], 10);
-    if (timeArr.length > 1) minutes = parseInt(timeArr[timeArr.length-2], 10);
-    if (timeArr.length > 2) hours = parseInt(timeArr[timeArr.length-3], 10);
+    if (timeArr.length > 0) seconds = parseInt(timeArr[timeArr.length - 1], 10);
+    if (timeArr.length > 1) minutes = parseInt(timeArr[timeArr.length - 2], 10);
+    if (timeArr.length > 2) hours = parseInt(timeArr[timeArr.length - 3], 10);
     this.time = this.totalTime = hours * 60 * 60 + minutes * 60 + seconds;
   }
   else if (x > this.trackLabelWidth && this.selectedKeys.length === 0 && y > this.headerHeight && y < this.canvasHeight - this.timeScrollHeight) {
@@ -265,18 +281,41 @@ Timeline.prototype.onMouseDoubleClick = function(event) {
   }
 };
 
-Timeline.prototype.addKeyAt = function(mouseX, mouseY) {
-  var selectedTrack = this.getTrackAt(mouseX, mouseY);
+Timeline.prototype.addTimelineEndKey = function (aTimeInSeconds) {
+  var xAtTime = this.timeToX(aTimeInSeconds)
+  //note no Y value is required, as the end key will ALWAYS be added to 
+  //the last track.
+  this.addKeyAt(xAtTime, 0, true)
+};
 
+
+Timeline.prototype.addKeyAt = function (mouseX, mouseY, ...isEndKey) {
+
+  //if we are being called in respect of adding an "time end key" then
+  //we always append the key to the LAST track, otherwise we append the
+  //key to the track at the specified mouse co-ordinates.
+  var selectedTrack = null;
+  if (isEndKey[0] == true) {
+    selectedTrack = this.tracks[this.tracks.length - 1]
+  } else {
+    selectedTrack = this.getTrackAt(mouseX, mouseY);
+  }
+
+  console.log(selectedTrack);
+  console.log(isEndKey)
+
+
+
+  //console.log(selectedTrack)
   if (!selectedTrack) {
     return;
   }
 
   var newKey = {
-      time: this.xToTime(mouseX),
-      value: selectedTrack.target[selectedTrack.propertyName],
-      easing: Timeline.Easing.Linear.EaseNone,
-      track: selectedTrack
+    time: this.xToTime(mouseX),
+    value: selectedTrack.target[selectedTrack.propertyName],
+    easing: Timeline.Easing.Linear.EaseNone,
+    track: selectedTrack
   };
   if (selectedTrack.keys.length === 0) {
     selectedTrack.keys.push(newKey);
@@ -285,36 +324,55 @@ Timeline.prototype.addKeyAt = function(mouseX, mouseY) {
     newKey.value = selectedTrack.keys[0].value;
     selectedTrack.keys.unshift(newKey);
   }
-  else if (newKey.time > selectedTrack.keys[selectedTrack.keys.length-1].time) {
-    newKey.value = selectedTrack.keys[selectedTrack.keys.length-1].value;
+  else if (newKey.time > selectedTrack.keys[selectedTrack.keys.length - 1].time) {
+    newKey.value = selectedTrack.keys[selectedTrack.keys.length - 1].value;
     selectedTrack.keys.push(newKey);
   }
-  else for(var i=1; i<selectedTrack.keys.length; i++) {
+  else for (var i = 1; i < selectedTrack.keys.length; i++) {
     if (selectedTrack.keys[i].time > newKey.time) {
-      var k = (selectedTrack.keys[i].time - newKey.time)/(selectedTrack.keys[i].time - selectedTrack.keys[i-1].time);
-      var delta = selectedTrack.keys[i].value - selectedTrack.keys[i-1].value;
-      newKey.easing = selectedTrack.keys[i-1].easing;
-      newKey.value = selectedTrack.keys[i-1].value + delta * newKey.easing(k);
+      var k = (selectedTrack.keys[i].time - newKey.time) / (selectedTrack.keys[i].time - selectedTrack.keys[i - 1].time);
+      var delta = selectedTrack.keys[i].value - selectedTrack.keys[i - 1].value;
+      newKey.easing = selectedTrack.keys[i - 1].easing;
+      newKey.value = selectedTrack.keys[i - 1].value + delta * newKey.easing(k);
       selectedTrack.keys.splice(i, 0, newKey);
       break;
     }
   }
   this.selectedKeys = [newKey];
   this.rebuildSelectedTracks();
+
+  if (isEndKey) {
+    this.timelineEndKey = newKey;
+  }
 };
 
-Timeline.prototype.getTrackAt = function(mouseX, mouseY) {
-  var scrollY = this.tracksScrollY * (this.tracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
-  var clickedTrackNumber = Math.floor((mouseY - this.headerHeight + scrollY)/this.trackLabelHeight);
+Timeline.prototype.getTrackAt = function (mouseX, mouseY) {
+ // var scrollY = this.tracksScrollY * (this.tracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
+  var scrollY = this.tracksScrollY * (this.displayableTracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
+  var clickedTrackNumber = Math.floor((mouseY - this.headerHeight + scrollY) / this.trackLabelHeight);
 
-  if (clickedTrackNumber >= 0 && clickedTrackNumber >= this.tracks.length || this.tracks[clickedTrackNumber].type == "object") {
+  if (clickedTrackNumber >= 0 && clickedTrackNumber >= this.displayableTracks.length || this.tracks[clickedTrackNumber].type == "object") {
     return null;
   }
 
-  return this.tracks[clickedTrackNumber];
+  return this.displayableTracks[clickedTrackNumber];
 };
 
-Timeline.prototype.selectKeys = function(mouseX, mouseY) {
+
+//this variant also return reference to "object" tracks, as necessary
+Timeline.prototype.getAnyTrackAt = function (mouseX, mouseY) {
+  // var scrollY = this.tracksScrollY * (this.tracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
+   var scrollY = this.tracksScrollY * (this.displayableTracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
+   var clickedTrackNumber = Math.floor((mouseY - this.headerHeight + scrollY) / this.trackLabelHeight);
+ 
+   if (clickedTrackNumber >= 0 && clickedTrackNumber >= this.displayableTracks.length) {
+     return null;
+   }
+ 
+   return this.displayableTracks[clickedTrackNumber];
+ };
+
+Timeline.prototype.selectKeys = function (mouseX, mouseY) {
   this.selectedKeys = [];
 
   var selectedTrack = this.getTrackAt(mouseX, mouseY);
@@ -323,22 +381,22 @@ Timeline.prototype.selectKeys = function(mouseX, mouseY) {
     return;
   }
 
-  for(var i=0; i<selectedTrack.keys.length; i++) {
+  for (var i = 0; i < selectedTrack.keys.length; i++) {
     var key = selectedTrack.keys[i];
     var x = this.timeToX(key.time);
 
-    if (x >= mouseX - this.trackLabelHeight*0.3 && x <= mouseX + this.trackLabelHeight*0.3) {
+    if (x >= mouseX - this.trackLabelHeight * 0.3 && x <= mouseX + this.trackLabelHeight * 0.3) {
       this.selectedKeys.push(key);
       break;
     }
   }
 };
 
-Timeline.prototype.preUpdate = function() {
+Timeline.prototype.preUpdate = function () {
   this.updateGUI();
 };
 
-Timeline.prototype.updateGUI = function() {
+Timeline.prototype.updateGUI = function () {
   if (!this.canvas) {
     this.initGUI();
   }
@@ -349,14 +407,14 @@ Timeline.prototype.updateGUI = function() {
   var h = this.canvas.height;
 
   this.tracksScrollHeight = this.canvas.height - this.headerHeight - this.timeScrollHeight;
-  var totalTracksHeight = this.tracks.length * this.trackLabelHeight;
-  var tracksScrollRatio = this.tracksScrollHeight/totalTracksHeight;
+  var totalTracksHeight = this.displayableTracks.length * this.trackLabelHeight;
+  var tracksScrollRatio = this.tracksScrollHeight / totalTracksHeight;
   this.tracksScrollThumbHeight = Math.min(Math.max(20, this.tracksScrollHeight * tracksScrollRatio), this.tracksScrollHeight);
 
   this.timeScrollWidth = this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth;
   var animationEnd = this.findAnimationEnd();
   var visibleTime = this.xToTime(this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth) - this.xToTime(0); //100 to get some space after lask key
-  var timeScrollRatio = Math.max(0, Math.min(visibleTime/animationEnd, 1));
+  var timeScrollRatio = Math.max(0, Math.min(visibleTime / animationEnd, 1));
   this.timeScrollThumbWidth = timeScrollRatio * this.timeScrollWidth;
   if (this.timeScrollThumbPos + this.timeScrollThumbWidth > this.timeScrollWidth) {
     this.timeScrollThumbPos = Math.max(0, this.timeScrollWidth - this.timeScrollThumbWidth);
@@ -366,52 +424,74 @@ Timeline.prototype.updateGUI = function() {
   this.c.clearRect(0, 0, w, h);
 
   //buttons
-  this.drawRect(0*this.headerHeight - 4 * -1, 5, this.headerHeight - 8, this.headerHeight - 8, "#DDDDDD");
-  this.drawRect(1*this.headerHeight - 4 *  0, 5, this.headerHeight - 8, this.headerHeight - 8, "#DDDDDD");
-  this.drawRect(2*this.headerHeight - 4 *  1, 5, this.headerHeight - 8, this.headerHeight - 8, "#DDDDDD");
-  this.drawRect(3*this.headerHeight - 4 *  2, 5, this.headerHeight - 8, this.headerHeight - 8, "#DDDDDD");
+  this.drawRect(0 * this.headerHeight - 4 * -1, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
+  this.drawRect(1 * this.headerHeight - 4 * 0, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
+  this.drawRect(2 * this.headerHeight - 4 * 1, 5, this.headerHeight - 8, this.headerHeight - 8, "AAAAAA");
+  this.drawRect(3*this.headerHeight - 4 *  2, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
 
   //play
   this.c.strokeStyle = "#777777";
   this.c.beginPath();
   this.c.moveTo(4 + 6.5, 5 + 5);
-  this.c.lineTo(this.headerHeight - 8, this.headerHeight/2+1.5);
+  this.c.lineTo(this.headerHeight - 8, this.headerHeight / 2 + 1.5);
   this.c.lineTo(4 + 6.5, this.headerHeight - 8);
   this.c.lineTo(4 + 6.5, 5 + 5);
   this.c.stroke();
+  this.c.closePath();
+  //this.c.fillStyle = "#333333";
+  this.c.fillStyle = "#FFFFFF";
+  this.c.fill();
+ 
+  
 
   //pause
-  this.c.strokeRect(this.headerHeight + 5.5, 5 + 5.5, this.headerHeight/6, this.headerHeight - 8 - 11);
-  this.c.strokeRect(this.headerHeight + 5.5 + this.headerHeight/6 + 2, 5 + 5.5, this.headerHeight/6, this.headerHeight - 8 - 11);
+  
+  this.c.strokeRect(this.headerHeight + 8.5, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11,);
+  this.c.fillRect(this.headerHeight + 8.5, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11,);
+  
+  this.c.strokeRect(this.headerHeight + 8.5 + this.headerHeight / 6 + 2, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11);
+  this.c.fillRect(this.headerHeight + 8.5 + this.headerHeight / 6 + 2, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11);
 
   //stop
-  this.c.strokeRect(2*this.headerHeight - 4 + 5.5, 5 + 5.5, this.headerHeight - 8 - 11, this.headerHeight - 8 - 11);
+  this.c.strokeRect(2 * this.headerHeight - 4 + 5.5, 5 + 5.5, this.headerHeight - 8 - 11, this.headerHeight - 8 - 11);
+  this.c.fillRect(2 * this.headerHeight - 4 + 5.5, 5 + 5.5, this.headerHeight - 8 - 11, this.headerHeight - 8 - 11);
 
   //export
-  this.c.beginPath();
-  this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 9.5);
-  this.c.lineTo(3*this.headerHeight - 4 *  2 + 11.5, this.headerHeight - 9.5);
-  this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 13.5);
-  this.c.lineTo(3*this.headerHeight - 4 *  2 + 13.5, this.headerHeight - 13.5);
-  this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 17.5);
-  this.c.lineTo(3*this.headerHeight - 4 *  2 + 15.5, this.headerHeight - 17.5);
-  this.c.stroke();
+  //this.c.beginPath();
+  //this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 9.5);
+  //this.c.lineTo(3*this.headerHeight - 4 *  2 + 11.5, this.headerHeight - 9.5);
+  //this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 13.5);
+  //this.c.lineTo(3*this.headerHeight - 4 *  2 + 13.5, this.headerHeight - 13.5);
+  //this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 17.5);
+  //this.c.lineTo(3*this.headerHeight - 4 *  2 + 15.5, this.headerHeight - 17.5);
+  //this.c.stroke();
+
+  //more info button
+  this.c.font = '24.35px FontAwesome';
+  this.c.fillText('\uf05a',3*this.headerHeight - 5 *  2 + 5.5, this.headerHeight - 9.5);
 
   //tracks area clipping path
   this.c.save();
   this.c.beginPath();
-  this.c.moveTo(0, this.headerHeight+1);
+  this.c.moveTo(0, this.headerHeight + 1);
   this.c.lineTo(this.canvas.width, this.headerHeight + 1);
   this.c.lineTo(this.canvas.width, this.canvas.height - this.timeScrollHeight);
   this.c.lineTo(0, this.canvas.height - this.timeScrollHeight);
   this.c.clip();
 
-  for(var i=0; i<this.tracks.length; i++) {
+  this.displayableTracks = this.computeDisplayableTracks(this.tracks)
+  for (var i = 0; i < this.displayableTracks.length; i++) {
     var yshift = this.headerHeight + this.trackLabelHeight * (i + 1);
-    var scrollY = this.tracksScrollY * (this.tracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
+    var scrollY = this.tracksScrollY * (this.displayableTracks.length * this.trackLabelHeight - this.canvas.height + this.headerHeight);
     yshift -= scrollY;
     if (yshift < this.headerHeight) continue;
-    this.drawTrack(this.tracks[i], yshift);
+    let curTrack = this.displayableTracks[i];
+    if (curTrack.type == "object") {
+      this.drawTrack(curTrack, yshift);
+    }else{
+      this.drawTrack(curTrack, yshift,-1);
+    }
+
   }
 
   this.c.restore();
@@ -429,36 +509,42 @@ Timeline.prototype.updateGUI = function() {
   var x = this.timeToX(0);
   //for(var sec=timelineStart; sec<timelineEnd; sec++) {
   var sec = timelineStart;
-  while(x < this.canvas.width) {
+  while (x < this.canvas.width) {
+   // x = this.timeToX(sec) + 20;
     x = this.timeToX(sec);
-    this.drawLine(x, 0, x, this.headerHeight*0.3, "#999999");
+    this.drawLine(x, 0, x, this.headerHeight * 0.3, "#999999");
 
     var minutes = Math.floor(sec / 60);
     var seconds = sec % 60;
     var time = minutes + ":" + ((seconds < 10) ? "0" : "") + seconds;
 
     if (x - lastTimeLabelX > 30) {
-      this.c.fillText(time, x - 6, this.headerHeight*0.8);
+      this.c.font = '12px KanitLight300';
+      this.c.fillText(time, x - 10, this.headerHeight * 0.7);
       lastTimeLabelX = x;
     }
     sec += 1;
   }
 
   //time ticker
-  this.drawLine(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#FF0000");
+  //this.drawLine(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000");
+  //this.drawTimelineTicker(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000", 40, 12, "#FF0000")
+  this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#AAAAAA", 48, 14, "#AAAAAA")
+
+  //function(x1, y1, x2, y2, color, triangleWidth, triangleHeight, triangleColor) 
 
   //time scale
 
-  for(var j=2; j<20; j++) {
-    var f = 1.0 - (j*j)/361;
-    this.drawLine(7 + f*(this.trackLabelWidth-10), h - this.timeScrollHeight + 4, 7 + f*(this.trackLabelWidth - 10), h - 3, "#999999");
+  for (var j = 2; j < 20; j++) {
+    var f = 1.0 - (j * j) / 361;
+    this.drawLine(7 + f * (this.trackLabelWidth - 10), h - this.timeScrollHeight + 4, 7 + f * (this.trackLabelWidth - 10), h - 3, "#999999");
   }
 
   this.c.fillStyle = "#666666";
   this.c.beginPath();
-  this.c.moveTo(7 + (1.0-this.timeScale)*(this.trackLabelWidth-10), h - 7);
-  this.c.lineTo(11 + (1.0-this.timeScale)*(this.trackLabelWidth - 10), h - 1);
-  this.c.lineTo(3 + (1.0-this.timeScale)*(this.trackLabelWidth - 10), h - 1);
+  this.c.moveTo(7 + (1.0 - this.timeScale) * (this.trackLabelWidth - 10), h - 7);
+  this.c.lineTo(11 + (1.0 - this.timeScale) * (this.trackLabelWidth - 10), h - 1);
+  this.c.lineTo(3 + (1.0 - this.timeScale) * (this.trackLabelWidth - 10), h - 1);
   this.c.fill();
 
   //tracks scrollbar
@@ -480,30 +566,131 @@ Timeline.prototype.updateGUI = function() {
   this.drawLine(this.trackLabelWidth, h - this.timeScrollHeight - 1, this.trackLabelWidth, h, "#000000");
 };
 
-Timeline.prototype.timeToX = function(time) {
+
+Timeline.prototype.computeDisplayableTracks = function (allTracksArr) {
+  displayableTracksArr = [];
+  allTracksArr.forEach((track) => {
+    //we always display object tracks
+    if (track.type == "object") {
+      displayableTracksArr.push(track)
+    } else {
+      //we only display property tracks where there display
+      //has been enabled for the parent (object) track
+      if (track.parent.showPropertyTracks) {
+        displayableTracksArr.push(track)
+      }
+    }
+  });
+  return displayableTracksArr;
+}
+
+Timeline.prototype.prepareTimelineTracksColorPallete = function () {
+  this.timelineTracksColorPalette.push("#ffadad");
+  this.timelineTracksColorPalette.push("#ffd6a5");
+  //this.timelineTracksColorPalette.push("#fdffb6");
+  this.timelineTracksColorPalette.push("#caffbf");
+  this.timelineTracksColorPalette.push("#96e8ff");
+  this.timelineTracksColorPalette.push("#a0c4ff");
+  this.timelineTracksColorPalette.push("#bdb2ff");
+  this.timelineTracksColorPalette.push("#debcff");
+  this.timelineTracksColorPalette.push("#ffc6ff");
+  this.timelineTracksColorPalette.push("#ffa7dc");
+};
+
+
+Timeline.prototype.getTimelineTrackColor = function (trackIndex) {
+
+  //we modulus the provided track index against the count of 
+  //the colors pallete array to ensure we never exceed the number of colors in the pallete
+  const effectiveIndex = trackIndex % this.timelineTracksColorPalette.length;
+  //return the color at the effective index
+  return this.dimHexColor(this.timelineTracksColorPalette[effectiveIndex],8);
+
+}
+
+
+
+Timeline.prototype.prepareFonts = function () {
+
+  //Kanit
+  let kanit = new FontFace(
+    "Kanit",
+    "url(https://fonts.gstatic.com/s/kanit/v15/nKKZ-Go6G5tXcraVGwCKd6xB.woff2)"
+  );
+
+  kanit.load().then((font) => {
+    document.fonts.add(font);
+    console.log(font.family + " loaded");
+  }).catch((error) => {
+    console.error("Font loading error:", error);
+  });
+
+  //Kanit Light 300
+  let kanitLight300 = new FontFace(
+    "KanitLight300",
+    "url(https://fonts.gstatic.com/s/kanit/v15/nKKU-Go6G5tXcr4-ORWnVaFrNlJz.woff2)"
+  );
+
+  kanitLight300.load().then((font) => {
+    document.fonts.add(font);
+    console.log(font.family + " loaded");
+  }).catch((error) => {
+    console.error("Font loading error:", error);
+  });
+
+
+};
+
+
+
+Timeline.prototype.drawImage = function(src, x, y, width, height) {
+  var img = new Image();
+  img.src = src;
+
+  img.onload = function () {
+    ctx.drawImage(img, x, y, width, height);
+  };
+
+  return img;
+};
+
+
+
+
+Timeline.prototype.timeToX = function (time) {
   var animationEnd = this.findAnimationEnd();
   var visibleTime = this.xToTime(this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth) - this.xToTime(20); //50 to get some additional space
   if (visibleTime < animationEnd) {
     time -= (animationEnd - visibleTime) * this.timeScrollX;
   }
 
-  return this.trackLabelWidth + time * (this.timeScale * 200) + 10;
+  //return this.trackLabelWidth + time * (this.timeScale * 200) + 10;
+  return this.trackLabelWidth + time * (this.timeScale * 200) + 30;
 };
 
-Timeline.prototype.xToTime = function(x) {
+Timeline.prototype.xToTime = function (x) {
   var animationEnd = this.findAnimationEnd();
-  var visibleTime = (this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth - 20)/(this.timeScale * 200);
+  var visibleTime = (this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth - 20) / (this.timeScale * 200);
   var timeShift = Math.max(0, (animationEnd - visibleTime) * this.timeScrollX);
-  return (x - this.trackLabelWidth - 10)/(this.timeScale * 200) + timeShift;
+  return (x - this.trackLabelWidth - 10) / (this.timeScale * 200) + timeShift;
 };
 
-Timeline.prototype.drawTrack = function(track, y) {
+Timeline.prototype.drawTrack = function (track, y) {
   var xshift = 5;
   if (track.type == "object") {
     //object track header background
-    this.drawRect(0, y - this.trackLabelHeight + 1, this.trackLabelWidth, this.trackLabelHeight-1, "#FFFFFF");
+    const trackColor = this.getTimelineTrackColor(track.colorPalleteIndex);
+    //this.drawRect(0, y - this.trackLabelHeight + 1, this.trackLabelWidth, this.trackLabelHeight - 1, "#DFFFFF");
+    this.drawRect(0, y - this.trackLabelHeight + 1, this.canvas.width, this.trackLabelHeight - 1,trackColor);
     //label color
-    this.c.fillStyle = "#000000";
+    this.c.fillStyle = "#FFFFFF";
+
+    //draw object track expansion/retraction widgets depending on the tracks showPropertyTracks state.
+    if (track.showPropertyTracks) {
+      this.drawTrackRetractionLine(140, y - 15, 10, 10, "#FFFFFF")
+    } else {
+      this.drawTrackExpansionCross(140, y - 15, 10, 10, "#FFFFFF");
+    }
   }
   else {
     xshift += 10;
@@ -512,13 +699,16 @@ Timeline.prototype.drawTrack = function(track, y) {
   }
 
   //bottom track line
+  this.c.lineWidth = 2;
   this.drawLine(0, y, this.canvas.width, y, "#FFFFFF");
   //draw track label
-  this.c.fillText(track.name, xshift, y - this.trackLabelHeight/4);
+  this.c.font = (track.type == "object") ? '15px  Kanit' : '14.5px KanitLight300'
+  this.c.fillText(track.name, xshift, y - this.trackLabelHeight *1.2 / 4);
+  this.c.fillStyle = "#FFFFFF"
 
   //if it's property track then draw anims
   if (track.type == "property") {
-    for(var i=0; i<track.keys.length; i++) {
+    for (var i = 0; i < track.keys.length; i++) {
       var key = track.keys[i];
       var selected = false;
       if (this.selectedKeys.indexOf(key) > -1) {
@@ -526,74 +716,128 @@ Timeline.prototype.drawTrack = function(track, y) {
       }
       var first = (i === 0);
       var last = (i == track.keys.length - 1);
-      this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight*0.5, this.trackLabelHeight*0.5, this.trackLabelHeight*0.5, "#999999", true, true, selected ? "#FF0000" : "#666666");
-      this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight*0.5, this.trackLabelHeight*0.5, this.trackLabelHeight*0.5, "#DDDDDD", !first, !last);
+      this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, "#999999", true, true, selected ? "#FF0000" : "#666666");
+      this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, "#DDDDDD", !first, !last);
     }
   }
 };
 
 
-Timeline.prototype.drawLine = function(x1, y1, x2, y2, color) {
+Timeline.prototype.drawLine = function (x1, y1, x2, y2, color) {
   this.c.strokeStyle = color;
   this.c.beginPath();
-  this.c.moveTo(x1+0.5, y1+0.5);
-  this.c.lineTo(x2+0.5, y2+0.5);
+  this.c.moveTo(x1 + 0.5, y1 + 0.5);
+  this.c.lineTo(x2 + 0.5, y2 + 0.5);
   this.c.stroke();
 };
 
-Timeline.prototype.drawRect = function(x, y, w, h, color) {
+Timeline.prototype.drawTimelineTicker = function (x1, y1, x2, y2, color, triangleWidth, triangleHeight, triangleColor) {
+  this.c.strokeStyle = color;
+  this.c.lineWidth = 3;
+  this.c.beginPath();
+  this.c.moveTo(x1 + 0.5, y1 + 0.5);
+  this.c.lineTo(x2 + 0.5, y2 + 0.5);
+  this.c.stroke();
+  this.c.lineWidth = 1;
+
+  // Calculate the midpoint of the line
+  const midX = (x1 + x2) / 2 + 0.5;
+  //const yPos = (y1 + y2) / 2 - 94;
+
+  // Draw the inverted triangle at the midpoint
+  this.c.beginPath();
+  this.c.moveTo(midX - triangleWidth / 2, y1 - triangleHeight);
+  this.c.lineTo(midX + triangleWidth / 2, y1 - triangleHeight );
+  this.c.lineTo(midX, y1 +12);
+  this.c.closePath();
+  this.c.fillStyle = triangleColor;
+  this.c.fill();
+};
+
+Timeline.prototype.drawRect = function (x, y, w, h, color) {
   this.c.fillStyle = color;
   this.c.fillRect(x, y, w, h);
 };
 
-Timeline.prototype.drawCenteredRect = function(x, y, w, h, color) {
+Timeline.prototype.drawCenteredRect = function (x, y, w, h, color) {
   this.c.fillStyle = color;
-  this.c.fillRect(x-w/2, y-h/2, w, h);
+  this.c.fillRect(x - w / 2, y - h / 2, w, h);
 };
 
-Timeline.prototype.drawRombus = function(x, y, w, h, color, drawLeft, drawRight, strokeColor) {
+Timeline.prototype.drawRombus = function (x, y, w, h, color, drawLeft, drawRight, strokeColor) {
   this.c.fillStyle = color;
   if (strokeColor) {
     this.c.lineWidth = 2;
     this.c.strokeStyle = strokeColor;
     this.c.beginPath();
-    this.c.moveTo(x, y - h/2);
-    this.c.lineTo(x + w/2, y);
-    this.c.lineTo(x, y + h/2);
-    this.c.lineTo(x - w/2, y);
-    this.c.lineTo(x, y - h/2);
+    this.c.moveTo(x, y - h / 2);
+    this.c.lineTo(x + w / 2, y);
+    this.c.lineTo(x, y + h / 2);
+    this.c.lineTo(x - w / 2, y);
+    this.c.lineTo(x, y - h / 2);
     this.c.stroke();
     this.c.lineWidth = 1;
   }
 
   if (drawLeft) {
     this.c.beginPath();
-    this.c.moveTo(x, y - h/2);
-    this.c.lineTo(x - w/2, y);
-    this.c.lineTo(x, y + h/2);
+    this.c.moveTo(x, y - h / 2);
+    this.c.lineTo(x - w / 2, y);
+    this.c.lineTo(x, y + h / 2);
     this.c.fill();
   }
 
   if (drawRight) {
     this.c.beginPath();
-    this.c.moveTo(x, y - h/2);
-    this.c.lineTo(x + w/2, y);
-    this.c.lineTo(x, y + h/2);
+    this.c.moveTo(x, y - h / 2);
+    this.c.lineTo(x + w / 2, y);
+    this.c.lineTo(x, y + h / 2);
     this.c.fill();
   }
 };
 
-Timeline.prototype.initTracks = function() {
+Timeline.prototype.drawTrackExpansionCross = function(x, y,width, height,color) {
+  // Set the line color
+  this.c.strokeStyle = color
+
+  this.c.lineWidth = 4; // Adjust this value as this.c
+  //the horizontal line
+  this.c.beginPath();
+  this.c.moveTo(x - width / 2, y);
+  this.c.lineTo(x + width / 2, y);
+  this.c.stroke();
+
+  //the vertical line
+  this.c.beginPath();
+  this.c.moveTo(x, y - height / 2);
+  this.c.lineTo(x, y + height / 2);
+  this.c.stroke();
+}
+
+Timeline.prototype.drawTrackRetractionLine = function(x, y,width, height,color) {
+  // Set the line color
+  this.c.strokeStyle = color
+
+  this.c.lineWidth = 4; // Adjust this value as this.c
+  //the horizontal line
+  this.c.beginPath();
+  this.c.moveTo(x - width / 2, y);
+  this.c.lineTo(x + width / 2, y);
+  this.c.stroke();
+}
+
+Timeline.prototype.initTracks = function () {
   this.tracks = [];
   var i, j;
   var anim;
-  for(i=0; i<this.anims.length; i++) {
+  for (i = 0; i < this.anims.length; i++) {
     anim = this.anims[i];
     var objectTrack = null;
     var propertyTrack = null;
-    for(j=0; j<this.tracks.length; j++) {
+    for (j = 0; j < this.tracks.length; j++) {
       if (this.tracks[j].type == "object" && this.tracks[j].target == anim.target) {
         objectTrack = this.tracks[j];
+       
       }
       if (this.tracks[j].type == "property" && this.tracks[j].target == anim.target && this.tracks[j].propertyName == anim.propertyName) {
         propertyTrack = this.tracks[j];
@@ -605,7 +849,9 @@ Timeline.prototype.initTracks = function() {
         id: anim.targetName,
         name: anim.targetName,
         target: anim.target,
-        propertyTracks: []
+        propertyTracks: [],
+        showPropertyTracks: false,
+        colorPalleteIndex: 0
       };
       if (!objectTrack.name) {
         objectTrack.name = "Object" + this.trackNameCounter++;
@@ -627,7 +873,7 @@ Timeline.prototype.initTracks = function() {
       //find place to insert
       var parentObjectTrack = null;
       var nextObjectTrack = null;
-      for(var k=0; k<this.tracks.length; k++) {
+      for (var k = 0; k < this.tracks.length; k++) {
         if (this.tracks[k].type == "object") {
           if (parentObjectTrack && !nextObjectTrack) {
             nextObjectTrack = this.tracks[k];
@@ -655,12 +901,17 @@ Timeline.prototype.initTracks = function() {
     propertyTrack.anims.push(anim);
   }
 
-  //convert anims to keys
-  for(i=0; i<this.tracks.length; i++) {
+  //convert anims to keys and assign color index to object tracks.
+  var curColorPalleteIndex = 0;
+  for (i = 0; i < this.tracks.length; i++) {
     var track = this.tracks[i];
     track.keys = [];
-    if (track.type == "object") continue;
-    for(j=0; j<track.anims.length; j++) {
+    if (track.type == "object"){ 
+      track.colorPalleteIndex = curColorPalleteIndex;
+      curColorPalleteIndex++;
+      continue;
+    }
+    for (j = 0; j < track.anims.length; j++) {
       anim = track.anims[j];
       if (anim.delay > 0) {
         var startValue = 0;
@@ -669,48 +920,50 @@ Timeline.prototype.initTracks = function() {
           startValue = track.target[track.propertyName];
         }
         else {
-          startValue = track.anims[j-1].endValue;
+          startValue = track.anims[j - 1].endValue;
         }
         track.keys.push({
-           time: anim.startTime,
-           value: startValue,
-           easing: easing,
-           track: track
+          time: anim.startTime,
+          value: startValue,
+          easing: easing,
+          track: track
         });
       }
       var easingFunc = Timeline.Easing.Linear.EaseNone;
       if (j < track.anims.length - 1) {
-        if (track.anims[j+1].delay === 0) {
-          easingFunc = track.anims[j+1].easing;
+        if (track.anims[j + 1].delay === 0) {
+          easingFunc = track.anims[j + 1].easing;
         }
       }
       track.keys.push({
-         time: anim.endTime,
-         value: anim.endValue,
-         easing: easingFunc,
-         track: track
+        time: anim.endTime,
+        value: anim.endValue,
+        easing: easingFunc,
+        track: track
       });
     }
   }
+
+  //console.log(this.tracks)
 };
 
-Timeline.prototype.buildInputDialog = function() {
+Timeline.prototype.buildInputDialog = function () {
   this.keyEditDialog = document.createElement("div");
   this.keyEditDialog.id = "keyEditDialog";
   this.keyEditDialog.style.cssText = "position:absolute; padding:5px; background: #DDDDDD; font-family:arial; font-size:11px; left: 100px; top:100px; border: 1px solid #AAAAAA; border-radius: 5px;";
 
   var easingOptions = "";
 
-  for(var easingFunctionFamilyName in Timeline.Easing) {
+  for (var easingFunctionFamilyName in Timeline.Easing) {
     var easingFunctionFamily = Timeline.Easing[easingFunctionFamilyName];
-    for(var easingFunctionName in easingFunctionFamily) {
+    for (var easingFunctionName in easingFunctionFamily) {
       easingOptions += "<option>" + easingFunctionFamilyName + "." + easingFunctionName + "</option>";
     }
   }
 
   var controls = "";
   controls += '<label style="margin-right:10px">Value<input type="text" id="keyEditDialogValue"/></label>';
-  controls += '<label style="margin-right:10px">Easing<select id="keyEditDialogEasing">'+easingOptions+'</label>';
+  controls += '<label style="margin-right:10px">Easing<select id="keyEditDialogEasing">' + easingOptions + '</label>';
   controls += '<input id="keyEditDialogOK" style="margin-left: 10px; margin-right:10px" type="button" value="OK"/>';
   controls += '<input id="keyEditDialogCancel" style="margin-right:10px" type="button" value="Cancel"/>';
   controls += '<a id="keyEditDialogDelete" style="margin-right:5px" href="#">[x]</a>';
@@ -725,16 +978,16 @@ Timeline.prototype.buildInputDialog = function() {
 
   var self = this;
 
-  this.keyEditDialogOK.addEventListener('click', function() {
+  this.keyEditDialogOK.addEventListener('click', function () {
     self.applyKeyEditDialog();
     self.hideKeyEditDialog();
   }, false);
 
-  this.keyEditDialogCancel.addEventListener('click', function() {
+  this.keyEditDialogCancel.addEventListener('click', function () {
     self.hideKeyEditDialog();
   }, false);
 
-  this.keyEditDialogDelete.addEventListener('click', function() {
+  this.keyEditDialogDelete.addEventListener('click', function () {
     self.deleteSelectedKeys();
     self.rebuildSelectedTracks();
     self.hideKeyEditDialog();
@@ -743,23 +996,23 @@ Timeline.prototype.buildInputDialog = function() {
   this.hideKeyEditDialog();
 };
 
-Timeline.prototype.applyKeyEditDialog = function() {
+Timeline.prototype.applyKeyEditDialog = function () {
   var value = Number(this.keyEditDialogValue.value);
   if (isNaN(value)) {
     return;
   }
   var selectedOption = this.keyEditDialogEasing.options[this.keyEditDialogEasing.selectedIndex];
-  var easing = Timeline.easingMap[selectedOption.value] ;
-  for(var i=0; i<this.selectedKeys.length; i++) {
+  var easing = Timeline.easingMap[selectedOption.value];
+  for (var i = 0; i < this.selectedKeys.length; i++) {
     this.selectedKeys[i].easing = easing;
     this.selectedKeys[i].value = value;
   }
   this.rebuildSelectedTracks();
 };
 
-Timeline.prototype.showKeyEditDialog = function(mouseX, mouseY) {
+Timeline.prototype.showKeyEditDialog = function (mouseX, mouseY) {
   this.keyEditDialogValue.value = this.selectedKeys[0].value;
-  for(var i=0; i<this.keyEditDialogEasing.options.length; i++) {
+  for (var i = 0; i < this.keyEditDialogEasing.options.length; i++) {
     var option = this.keyEditDialogEasing.options[i];
     var easingFunction = Timeline.easingMap[option.value];
     if (easingFunction == this.selectedKeys[0].easing) {
@@ -774,8 +1027,8 @@ Timeline.prototype.showKeyEditDialog = function(mouseX, mouseY) {
   this.keyEditDialogValue.focus();
 };
 
-Timeline.prototype.deleteSelectedKeys = function() {
-  for(var i=0; i<this.selectedKeys.length; i++) {
+Timeline.prototype.deleteSelectedKeys = function () {
+  for (var i = 0; i < this.selectedKeys.length; i++) {
     var selectedKey = this.selectedKeys[i];
     var keyIndex = selectedKey.track.keys.indexOf(selectedKey);
     selectedKey.track.keys.splice(keyIndex, 1);
@@ -783,32 +1036,51 @@ Timeline.prototype.deleteSelectedKeys = function() {
   this.rebuildSelectedTracks();
 };
 
-Timeline.prototype.hideKeyEditDialog = function() {
+Timeline.prototype.deleteKey = function (aKeyToDelete) {
+
+  var keyIndex = aKeyToDelete.track.keys.indexOf(aKeyToDelete);
+  console.log(keyIndex)
+  aKeyToDelete.track.keys.splice(keyIndex, 1);
+  this.rebuildTrackAnimsFromKeys(aKeyToDelete.track)
+  this.save();
+}
+
+Timeline.prototype.deleteTimelineEndKey = function () {
+
+  if (this.timelineEndKey != null) {
+    this.deleteKey(this.timelineEndKey);
+    this.timelineEndKey = null;
+  }
+};
+
+
+
+Timeline.prototype.hideKeyEditDialog = function () {
   this.keyEditDialog.style.display = "none";
 };
 
-Timeline.prototype.sortTrackKeys = function(track) {
-  track.keys.sort(function(a,b) { return a.time - b.time; });
+Timeline.prototype.sortTrackKeys = function (track) {
+  track.keys.sort(function (a, b) { return a.time - b.time; });
 
   var result = "";
-  for(var i=0; i<track.keys.length; i++) {
+  for (var i = 0; i < track.keys.length; i++) {
     result += track.keys[i].time + " ";
   }
 };
 
-Timeline.prototype.rebuildSelectedTracks = function() {
-  for(var i=0; i<this.selectedKeys.length; i++) {
+Timeline.prototype.rebuildSelectedTracks = function () {
+  for (var i = 0; i < this.selectedKeys.length; i++) {
     this.rebuildTrackAnimsFromKeys(this.selectedKeys[i].track);
   }
   this.save();
 };
 
-Timeline.prototype.rebuildTrackAnimsFromKeys = function(track) {
+Timeline.prototype.rebuildTrackAnimsFromKeys = function (track) {
   var deletedAnims = [];
   var j;
 
   //remove all track's anims from the timeline
-  for(j=0; j<track.anims.length; j++) {
+  for (j = 0; j < track.anims.length; j++) {
     var index = this.anims.indexOf(track.anims[j]);
     deletedAnims.push(track.anims[j]);
     this.anims.splice(index, 1);
@@ -826,7 +1098,7 @@ Timeline.prototype.rebuildTrackAnimsFromKeys = function(track) {
   var prevKeyValue = track.keys[0].value;
   var prevKeyEasing = Timeline.Easing.Linear.EaseNone;
   //create new anims based on keys
-  for(j=0; j<track.keys.length; j++) {
+  for (j = 0; j < track.keys.length; j++) {
     var key = track.keys[j];
     var anim = {
       timeline: this,
@@ -848,15 +1120,15 @@ Timeline.prototype.rebuildTrackAnimsFromKeys = function(track) {
   }
 };
 
-Timeline.prototype.exportCode = function() {
+Timeline.prototype.exportCode = function () {
   var code = "";
 
-  for(var i=0; i<this.tracks.length; i++) {
+  for (var i = 0; i < this.tracks.length; i++) {
     var track = this.tracks[i];
     if (track.type == "object") continue;
     if (track.anims.length === 0) continue;
     code += 'anim("' + track.parent.name + '",' + track.parent.name + ')';
-    for(var j=0; j<track.anims.length; j++) {
+    for (var j = 0; j < track.anims.length; j++) {
       var anim = track.anims[j];
       code += '.to(';
       if (anim.delay)
@@ -874,13 +1146,13 @@ Timeline.prototype.exportCode = function() {
   prompt("Copy this:", code);
 };
 
-Timeline.prototype.save = function() {
+Timeline.prototype.save = function () {
   var data = {};
 
-  for(var i=0; i<this.tracks.length; i++) {
+  for (var i = 0; i < this.tracks.length; i++) {
     var track = this.tracks[i];
     var keysData = [];
-    for(var j=0; j<track.keys.length; j++) {
+    for (var j = 0; j < track.keys.length; j++) {
       keysData.push({
         time: track.keys[j].time,
         value: track.keys[j].value,
@@ -895,7 +1167,7 @@ Timeline.prototype.save = function() {
   localStorage["timeline.js.data." + this.name] = JSON.stringify(data);
 };
 
-Timeline.prototype.load = function() {
+Timeline.prototype.load = function () {
   if (localStorage["timeline.js.settings.canvasHeight"]) {
     this.canvasHeight = localStorage["timeline.js.settings.canvasHeight"];
   }
@@ -906,7 +1178,7 @@ Timeline.prototype.load = function() {
   var dataString = localStorage["timeline.js.data." + this.name];
   if (!dataString) return;
   var data = JSON.parse(dataString);
-  for(var i=0; i<this.tracks.length; i++) {
+  for (var i = 0; i < this.tracks.length; i++) {
     var track = this.tracks[i];
     if (!data[track.id]) {
       continue;
@@ -914,7 +1186,7 @@ Timeline.prototype.load = function() {
     if (track.type == "property") {
       var keysData = data[track.id];
       track.keys = [];
-      for(var j=0; j<keysData.length; j++) {
+      for (var j = 0; j < keysData.length; j++) {
         track.keys.push({
           time: keysData[j].time,
           value: keysData[j].value,
@@ -925,4 +1197,50 @@ Timeline.prototype.load = function() {
       this.rebuildTrackAnimsFromKeys(track);
     }
   }
+};
+
+
+Timeline.prototype.dimHexColor = function(hexColor, dimPercentage) {
+  // Ensure the dimPercentage is between 0 and 100.
+  dimPercentage = Math.min(100, Math.max(0, dimPercentage));
+
+  // Convert the hex color to RGB values.
+  const red = parseInt(hexColor.slice(1, 3), 16);
+  const green = parseInt(hexColor.slice(3, 5), 16);
+  const blue = parseInt(hexColor.slice(5, 7), 16);
+
+  // Dim each RGB component based on the dimPercentage.
+  const dimmedRed = Math.round(red * (1 - dimPercentage / 100));
+  const dimmedGreen = Math.round(green * (1 - dimPercentage / 100));
+  const dimmedBlue = Math.round(blue * (1 - dimPercentage / 100));
+
+  // Ensure the RGB components are within the valid range (0-255).
+  const finalRed = Math.min(255, Math.max(0, dimmedRed));
+  const finalGreen = Math.min(255, Math.max(0, dimmedGreen));
+  const finalBlue = Math.min(255, Math.max(0, dimmedBlue));
+
+  // Convert the modified RGB components back to a hex color value.
+  const dimmedColor = `#${finalRed.toString(16).padStart(2, '0')}${finalGreen.toString(16).padStart(2, '0')}${finalBlue.toString(16).padStart(2, '0')}`;
+
+  return dimmedColor;
+};
+
+
+Timeline.prototype.toggleTrackPropertiesExpansion = function(aTrack) {
+    if(aTrack.showPropertyTracks){
+      aTrack.showPropertyTracks = false;
+    }else{
+      aTrack.showPropertyTracks = true;
+    }
+}
+
+
+
+Timeline.prototype.loadCssStyleSheet = function(aUrl) {
+  let head = document.getElementsByTagName('HEAD')[0];
+  let link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = aUrl;
+  head.appendChild(link);
 };

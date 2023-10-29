@@ -49,19 +49,50 @@ function init() {
     opacity:1
   };
 
-  anim("rect",rect).to({"x":20},0).to({"x":110},1, Timeline.Easing.Bounce.EaseOut).to({"x":20},1, Timeline.Easing.Cubic.EaseOut);
-  anim("rect",rect).to({"rotation":0},0).to({"rotation":3.14},0.99);
-  anim("rect",rect).to(1.69,{"opacity":1},0).to({"opacity":0},0.3799999999999999, Timeline.Easing.Bounce.EaseOut).to({"opacity":1},0.20000000000000018, Timeline.Easing.Cubic.EaseOut);
-  anim("rect",rect).to({"y":50},0).to({"y":50},0.98).to({"y":100},1.02, Timeline.Easing.Cubic.EaseOut).to({"y":50},0.27, Timeline.Easing.Cubic.EaseOut);
-  anim("rect2",rect2).to({"x":150},0).to({"x":150},0.34).to({"x":300},1.2, Timeline.Easing.Cubic.EaseOut);
-  anim("rect2",rect2).to({"y":50},0).to({"y":50},0.33).to({"y":100},1.19);
-  anim("rect2",rect2).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
-  anim("rect2",rect2).to({"height":40},0).to({"height":40},0.34).to({"height":300},1.2);
-  anim("rect2",rect2).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
-  anim("rect2",rect2).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
+  var rect3 = {
+    x: 150,
+    y: 50,
+    width: 40,
+    height: 40,
+    rotation: 0,
+    opacity:1
+  };
+
+  var rect4 = {
+    x: 150,
+    y: 50,
+    width: 40,
+    height: 40,
+    rotation: 0,
+    opacity:1
+  };
+
+  anim("Camera",rect).to({"x":20},0).to({"x":110},1, Timeline.Easing.Bounce.EaseOut).to({"x":20},1, Timeline.Easing.Cubic.EaseOut);
+  anim("Camera",rect).to({"rotation":0},0).to({"rotation":3.14},0.99);
+  anim("Camera",rect).to(1.69,{"opacity":1},0).to({"opacity":0},0.3799999999999999, Timeline.Easing.Bounce.EaseOut).to({"opacity":1},0.20000000000000018, Timeline.Easing.Cubic.EaseOut);
+  anim("Camera",rect).to({"y":50},0).to({"y":50},0.98).to({"y":100},1.02, Timeline.Easing.Cubic.EaseOut).to({"y":50},0.27, Timeline.Easing.Cubic.EaseOut);
+  
+  
+  anim("Plane",rect2).to({"x":150},0).to({"x":150},0.34).to({"x":300},1.2, Timeline.Easing.Cubic.EaseOut);
+  anim("Plane",rect2).to({"y":50},0).to({"y":50},0.33).to({"y":100},1.19);
+  anim("Plane",rect2).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
+  anim("Plane",rect2).to({"height":40},0).to({"height":40},0.34).to({"height":300},1.2);
+  anim("Plane",rect2).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
+  anim("Plane",rect2).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
+
+  anim("IPhone 14",rect3).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
+  anim("IPhone 14",rect3).to({"height":40},0).to({"height":40},0.34).to({"height":300},1.2);
+  anim("IPhone 14",rect3).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
+  anim("IPhone 14",rect3).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
+
+  anim("Title Text",rect4).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
+  anim("Title Text",rect4).to({"height":40},0).to({"height":40},0.34).to({"height":300},1.2);
+  anim("Title Text",rect4).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
+  anim("Title Text",rect4).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
 
 
-  Timeline.getGlobalInstance().loop(-1); //loop forever
+
+  Timeline.getGlobalInstance().loop(1); //loop forever
 
   function draw() {
     var w = canvas.width;
@@ -95,10 +126,21 @@ function init() {
 
 window.onload = init;
 
+function addKey(){
+
+    Timeline.getGlobalInstance().addTimelineEndKey(55);
+}
+
+function deleteEndKey(){
+
+  Timeline.getGlobalInstance().deleteTimelineEndKey();
+}
+
 </script>
 </head>
 <body>
-<h1>Timeline.js - Bouncing rectangles</h1>
+<input type="button" value="test" onclick="addKey()"/>
+<input type="button" value="testDelete" onclick="deleteEndKey()"/>
 <canvas id="canvas" width="600" height="300" style="border: 1px solid black;"></canvas>
 </body>
 </html>
