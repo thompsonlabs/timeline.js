@@ -85,10 +85,10 @@ function init() {
   anim("IPhone 14",rect3).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
   anim("IPhone 14",rect3).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
 
-  anim("Title Text",rect4).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
-  anim("Title Text",rect4).to({"height":40},0).to({"height":40},0.34).to({"height":300},1.2);
-  anim("Title Text",rect4).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
-  anim("Title Text",rect4).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
+  anim("Title Text",rect4).setIsText(true).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
+  anim("Title Text",rect4).setIsText(true).to({"height":40},0).to({"height":40},0.34).to({"height":300},1.2);
+  anim("Title Text",rect4).setIsText(true).to({"rotation":0},0).to({"rotation":0},0.31).to({"rotation":6.28},1.22, Timeline.Easing.Cubic.EaseOut);
+  anim("Title Text",rect4).setIsText(true).to({"opacity":1},0).to({"opacity":1},0.3).to({"opacity":0},1.22, Timeline.Easing.Cubic.EaseOut).to({"opacity":0},0.52);
 
 
 

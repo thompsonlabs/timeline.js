@@ -687,9 +687,9 @@ Timeline.prototype.drawTrack = function (track, y) {
 
     //draw object track expansion/retraction widgets depending on the tracks showPropertyTracks state.
     if (track.showPropertyTracks) {
-      this.drawTrackRetractionLine(140, y - 15, 10, 10, "#FFFFFF")
+      this.drawTrackRetractionLine(140, y - 13.4, 10, 10, "#FFFFFF")
     } else {
-      this.drawTrackExpansionCross(140, y - 15, 10, 10, "#FFFFFF");
+      this.drawTrackExpansionCross(140, y - 13.4, 10, 10, "#FFFFFF");
     }
   }
   else {
@@ -701,9 +701,32 @@ Timeline.prototype.drawTrack = function (track, y) {
   //bottom track line
   this.c.lineWidth = 2;
   this.drawLine(0, y, this.canvas.width, y, "#FFFFFF");
+
+  //draw (object) track icon
+  if (track.type == "object") {
+
+    if (track.name.toLowerCase() == "camera") {
+      this.c.font = '15px FontAwesome';
+      this.c.fillText('\uf03d', xshift, y - this.trackLabelHeight * 1.2 / 4);
+    }else if (track.name.toLowerCase() == "plane"){
+      this.c.font = '15px FontAwesome';
+      this.c.fillText('\uf0c8', xshift, y - this.trackLabelHeight * 1.2 / 4);
+    } else if (track.isTextTrack){
+      this.c.font = '15px FontAwesome';
+      this.c.fillText('\uf891', xshift, y - this.trackLabelHeight * 1.2 / 4);
+    }else{
+      this.c.font = '15px FontAwesome';
+      this.c.fillText('\uf1b2', xshift, y - this.trackLabelHeight * 1.2 / 4);
+    }
+
+  } else {
+    this.c.font = '13px FontAwesome';
+    this.c.fillText('\uf2f2', xshift, y - this.trackLabelHeight * 1.2 / 4);
+  }
+
   //draw track label
   this.c.font = (track.type == "object") ? '15px  Kanit' : '14.5px KanitLight300'
-  this.c.fillText(track.name, xshift, y - this.trackLabelHeight *1.2 / 4);
+  this.c.fillText(track.name, xshift+25, y - this.trackLabelHeight *1.3 / 4);
   this.c.fillStyle = "#FFFFFF"
 
   //if it's property track then draw anims
@@ -838,11 +861,13 @@ Timeline.prototype.initTracks = function () {
       if (this.tracks[j].type == "object" && this.tracks[j].target == anim.target) {
         objectTrack = this.tracks[j];
        
+       
       }
       if (this.tracks[j].type == "property" && this.tracks[j].target == anim.target && this.tracks[j].propertyName == anim.propertyName) {
         propertyTrack = this.tracks[j];
       }
     }
+  
     if (!objectTrack) {
       objectTrack = {
         type: "object",
@@ -851,13 +876,16 @@ Timeline.prototype.initTracks = function () {
         target: anim.target,
         propertyTracks: [],
         showPropertyTracks: false,
-        colorPalleteIndex: 0
+        colorPalleteIndex: 0,
+        isTextTrack: anim.parent.isText,
       };
       if (!objectTrack.name) {
         objectTrack.name = "Object" + this.trackNameCounter++;
       }
       this.tracks.push(objectTrack);
     }
+
+    
 
     if (!propertyTrack) {
       propertyTrack = {

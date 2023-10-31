@@ -170,6 +170,7 @@ function Anim(name, target, timeline) {
   this.target = target;
   this.timeline = timeline;
   this.animGroups = [];
+  this.isText = false;
 }
 
 //delay, properties, duration, easing
@@ -238,6 +239,7 @@ Anim.prototype.to = function() {
   return this;
 };
 
+
 Anim.prototype.onStart = function(callback) {
   var currentAnimGroup = this.animGroups[this.animGroups.length-1];
   if (!currentAnimGroup) return;
@@ -281,6 +283,11 @@ Anim.prototype.onEnd = function(callback) {
 
   return this;
 }
+
+Anim.prototype.setIsText = function(aValue) {
+  this.isText = aValue;
+  return this;
+};
 
 function anim(targetName, targetObject, parentTimeline) {
   var args = [];
