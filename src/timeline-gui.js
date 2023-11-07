@@ -877,7 +877,7 @@ Timeline.prototype.initTracks = function () {
         propertyTracks: [],
         showPropertyTracks: false,
         colorPalleteIndex: 0,
-        isTextTrack: anim.parent.isText,
+        isTextTrack: false,
       };
       if (!objectTrack.name) {
         objectTrack.name = "Object" + this.trackNameCounter++;
@@ -1174,11 +1174,14 @@ Timeline.prototype.exportCode = function () {
   prompt("Copy this:", code);
 };
 
+
+
 Timeline.prototype.save = function () {
   var data = {};
 
   for (var i = 0; i < this.tracks.length; i++) {
     var track = this.tracks[i];
+    console.log("track name: "+track.name)
     var keysData = [];
     for (var j = 0; j < track.keys.length; j++) {
       keysData.push({
@@ -1271,4 +1274,83 @@ Timeline.prototype.loadCssStyleSheet = function(aUrl) {
   link.type = 'text/css';
   link.href = aUrl;
   head.appendChild(link);
+};
+
+Timeline.prototype.addNewTrack = function(trackName) {
+
+  
+  const aNewAnimTarget = {
+    position: 150,
+    scale: 50,
+    rotation: 40,
+    opacity:1
+  };
+ 
+  const aNewAnim = anim(trackName,aNewAnimTarget).setIsText(false).to({"position":40},0).to({"position":40},0.34).to({"position":300},1.2);
+  
+  const trackColorPalleteIdx = this.tracks.lengh -1
+  console.log(this.tracks.lengh)
+  
+  var objectTrack = {
+    type: "object",
+    id: aNewAnim.name,
+    name: aNewAnim.name,
+    target: aNewAnim.target,
+    propertyTracks: [],
+    showPropertyTracks: false,
+    colorPalleteIndex: 0,
+    isTextTrack: anim.isText,
+  };
+
+  objectTrack.keys = [];
+
+  var propertyTrack = {
+    type: "property",
+    id: objectTrack.name + "." + aNewAnimTarget.position,
+    name: aNewAnimTarget.position,
+    propertyName: aNewAnimTarget.position,
+    target: aNewAnimTarget,
+    parent: objectTrack,
+    anims: []
+  };
+
+  //add sudo animation keys to property track
+  propertyTrack.keys = [];
+
+
+
+  //animation start key
+  const easingFunc = Timeline.Easing.Linear.EaseNone;
+  propertyTrack.keys.push({
+    time: 0,
+    value: 40,
+    easing: easingFunc,
+    track: propertyTrack
+  });
+
+  //animation end key
+  propertyTrack.keys.push({
+    time: 1,
+    value: 80,
+    easing: easingFunc,
+    track: propertyTrack
+  });
+
+
+
+  objectTrack.propertyTracks.push(propertyTrack);
+
+
+
+  console.log(objectTrack)
+
+  this.tracks.push(objectTrack);
+  this.tracks.push(propertyTrack);
+  
+
+  //console.log(this.anims.length)
+  //anim(trackName,aNewAnimTarget,Timeline.getGlobalInstance()).setIsText(false).to({"width":40},0).to({"width":40},0.34).to({"width":300},1.2);
+  //console.log(this.anims.length)
+
+
 };

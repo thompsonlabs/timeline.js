@@ -93,7 +93,7 @@ Timeline.prototype.update = function(deltaTime) {
     }
   }
 
-  this.applyValues();
+  //this.applyValues();
 };
 
 Timeline.prototype.findAnimationEnd = function() {
@@ -237,6 +237,8 @@ Anim.prototype.to = function() {
   this.animGroups.push(animGroup);
   this.endTime += delay + duration;
   return this;
+
+  
 };
 
 
