@@ -1181,7 +1181,7 @@ Timeline.prototype.save = function () {
 
   for (var i = 0; i < this.tracks.length; i++) {
     var track = this.tracks[i];
-    console.log("track name: "+track.name)
+    //console.log("track name: "+track.name)
     var keysData = [];
     for (var j = 0; j < track.keys.length; j++) {
       keysData.push({
@@ -1196,6 +1196,7 @@ Timeline.prototype.save = function () {
   localStorage["timeline.js.settings.canvasHeight"] = this.canvasHeight;
   localStorage["timeline.js.settings.timeScale"] = this.timeScale;
   localStorage["timeline.js.data." + this.name] = JSON.stringify(data);
+  console.log(data)
 };
 
 Timeline.prototype.load = function () {
@@ -1346,6 +1347,8 @@ Timeline.prototype.addNewTrack = function(trackName) {
 
   this.tracks.push(objectTrack);
   this.tracks.push(propertyTrack);
+
+  this.save()
   
 
   //console.log(this.anims.length)
