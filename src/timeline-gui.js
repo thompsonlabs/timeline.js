@@ -672,7 +672,7 @@ Timeline.prototype.xToTime = function (x) {
   var animationEnd = this.findAnimationEnd();
   var visibleTime = (this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth - 20) / (this.timeScale * 200);
   var timeShift = Math.max(0, (animationEnd - visibleTime) * this.timeScrollX);
-  return (x - this.trackLabelWidth - 10) / (this.timeScale * 200) + timeShift;
+  return (x - this.trackLabelWidth - 30) / (this.timeScale * 200) + timeShift;
 };
 
 Timeline.prototype.drawTrack = function (track, y) {
