@@ -145,7 +145,7 @@ Timeline.prototype.onMouseDown = function (event) {
   else if (x > this.trackLabelWidth && y > this.canvasHeight - this.timeScrollHeight) {
     //time scroll
     if (x >= this.trackLabelWidth + this.timeScrollThumbPos && x <= this.trackLabelWidth + this.timeScrollThumbPos + this.timeScrollThumbWidth) {
-      this.timeScrollThumbDragOffset = x - this.trackLabelWidth - this.timeScrollThumbPos;
+      this.timeScrollThumbDragOffset = x - this.trackLabelWidth - this.timeScrollThumbPos ;
       this.draggingTimeScrollThumb = true;
     }
   }
@@ -420,9 +420,9 @@ Timeline.prototype.updateGUI = function () {
     this.timeScrollThumbPos = Math.max(0, this.timeScrollWidth - this.timeScrollThumbWidth);
   }
 
-
   this.c.clearRect(0, 0, w, h);
 
+  /** 
   //buttons
   this.drawRect(0 * this.headerHeight - 4 * -1, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
   this.drawRect(1 * this.headerHeight - 4 * 0, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
@@ -479,6 +479,8 @@ Timeline.prototype.updateGUI = function () {
   this.c.lineTo(0, this.canvas.height - this.timeScrollHeight);
   this.c.clip();
 
+  */
+  
   this.displayableTracks = this.computeDisplayableTracks(this.tracks)
   for (var i = 0; i < this.displayableTracks.length; i++) {
     var yshift = this.headerHeight + this.trackLabelHeight * (i + 1);
@@ -497,6 +499,7 @@ Timeline.prototype.updateGUI = function () {
   this.c.restore();
 
   //end of label panel
+  this.c.lineWidth = 1;
   this.drawLine(this.trackLabelWidth, 0, this.trackLabelWidth, h, "#000000");
 
   //timeline
@@ -526,6 +529,8 @@ Timeline.prototype.updateGUI = function () {
     sec += 1;
   }
 
+
+
   //time ticker
   //this.drawLine(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000");
   //this.drawTimelineTicker(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000", 40, 12, "#FF0000")
@@ -534,7 +539,6 @@ Timeline.prototype.updateGUI = function () {
   //function(x1, y1, x2, y2, color, triangleWidth, triangleHeight, triangleColor) 
 
   //time scale
-
   for (var j = 2; j < 20; j++) {
     var f = 1.0 - (j * j) / 361;
     this.drawLine(7 + f * (this.trackLabelWidth - 10), h - this.timeScrollHeight + 4, 7 + f * (this.trackLabelWidth - 10), h - 3, "#999999");
@@ -564,7 +568,75 @@ Timeline.prototype.updateGUI = function () {
   this.drawLine(0, this.headerHeight, w, this.headerHeight, "#000000");
   this.drawLine(0, h - this.timeScrollHeight, this.trackLabelWidth, h - this.timeScrollHeight, "#000000");
   this.drawLine(this.trackLabelWidth, h - this.timeScrollHeight - 1, this.trackLabelWidth, h, "#000000");
+
+  this.drawControlButttons();
 };
+
+
+Timeline.prototype.drawControlButttons = function () {
+
+    //draw control buttons background.
+    this.drawRect(0 * this.headerHeight * -1, 1, this.trackLabelWidth, this.headerHeight - 1, "#EEEEEE");
+
+
+    //buttons
+    this.drawRect(0 * this.headerHeight - 4 * -1, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
+    this.drawRect(1 * this.headerHeight - 4 * 0, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
+    this.drawRect(2 * this.headerHeight - 4 * 1, 5, this.headerHeight - 8, this.headerHeight - 8, "AAAAAA");
+    this.drawRect(3 * this.headerHeight - 4 *  2, 5, this.headerHeight - 8, this.headerHeight - 8, "#AAAAAA");
+  
+    //play
+    this.c.strokeStyle = "#777777";
+    this.c.beginPath();
+    this.c.moveTo(4 + 6.5, 5 + 5);
+    this.c.lineTo(this.headerHeight - 8, this.headerHeight / 2 + 1.5);
+    this.c.lineTo(4 + 6.5, this.headerHeight - 8);
+    this.c.lineTo(4 + 6.5, 5 + 5);
+    this.c.stroke();
+    this.c.closePath();
+    //this.c.fillStyle = "#333333";
+    this.c.fillStyle = "#FFFFFF";
+    this.c.fill();
+   
+    
+  
+    //pause
+    
+    this.c.strokeRect(this.headerHeight + 8.5, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11,);
+    this.c.fillRect(this.headerHeight + 8.5, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11,);
+    
+    this.c.strokeRect(this.headerHeight + 8.5 + this.headerHeight / 6 + 2, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11);
+    this.c.fillRect(this.headerHeight + 8.5 + this.headerHeight / 6 + 2, 5 + 5.5, this.headerHeight / 6, this.headerHeight - 8 - 11);
+  
+    //stop
+    this.c.strokeRect(2 * this.headerHeight - 4 + 5.5, 5 + 5.5, this.headerHeight - 8 - 11, this.headerHeight - 8 - 11);
+    this.c.fillRect(2 * this.headerHeight - 4 + 5.5, 5 + 5.5, this.headerHeight - 8 - 11, this.headerHeight - 8 - 11);
+  
+    //export
+    //this.c.beginPath();
+    //this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 9.5);
+    //this.c.lineTo(3*this.headerHeight - 4 *  2 + 11.5, this.headerHeight - 9.5);
+    //this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 13.5);
+    //this.c.lineTo(3*this.headerHeight - 4 *  2 + 13.5, this.headerHeight - 13.5);
+    //this.c.moveTo(3*this.headerHeight - 4 *  2 + 5.5, this.headerHeight - 17.5);
+    //this.c.lineTo(3*this.headerHeight - 4 *  2 + 15.5, this.headerHeight - 17.5);
+    //this.c.stroke();
+  
+    //more info button
+    this.c.font = '24.35px FontAwesome';
+    this.c.fillText('\uf05a',3*this.headerHeight - 5 *  2 + 5.5, this.headerHeight - 9.5);
+  
+    //tracks area clipping path
+    this.c.save();
+    this.c.beginPath();
+    this.c.moveTo(0, this.headerHeight + 1);
+    this.c.lineTo(this.canvas.width, this.headerHeight + 1);
+    this.c.lineTo(this.canvas.width, this.canvas.height - this.timeScrollHeight);
+    this.c.lineTo(0, this.canvas.height - this.timeScrollHeight);
+    this.c.clip();
+  
+
+}
 
 
 Timeline.prototype.computeDisplayableTracks = function (allTracksArr) {
@@ -657,6 +729,9 @@ Timeline.prototype.drawImage = function(src, x, y, width, height) {
 
 
 
+
+
+
 Timeline.prototype.timeToX = function (time) {
   var animationEnd = this.findAnimationEnd();
   var visibleTime = this.xToTime(this.canvas.width - this.trackLabelWidth - this.tracksScrollWidth) - this.xToTime(20); //50 to get some additional space
@@ -696,6 +771,7 @@ Timeline.prototype.drawTrack = function (track, y) {
     xshift += 10;
     //label color
     this.c.fillStyle = "#555555";
+   
   }
 
   //bottom track line
@@ -720,14 +796,18 @@ Timeline.prototype.drawTrack = function (track, y) {
     }
 
   } else {
-    this.c.font = '13px FontAwesome';
-    this.c.fillText('\uf2f2', xshift, y - this.trackLabelHeight * 1.2 / 4);
+    //this.c.font = '13px FontAwesome';
+    //this.c.fillText('\uf2f2', xshift, y - this.trackLabelHeight * 1.2 / 4);
   }
 
-  //draw track label
-  this.c.font = (track.type == "object") ? '15px  Kanit' : '14.5px KanitLight300'
-  this.c.fillText(track.name, xshift+25, y - this.trackLabelHeight *1.3 / 4);
-  this.c.fillStyle = "#FFFFFF"
+
+
+ ////draw track label
+ //this.c.font = (track.type == "object") ? '15px  Kanit' : '14.5px KanitLight300'
+ //this.c.fillText(track.name, xshift+25, y - this.trackLabelHeight *1.3 / 4);
+ //this.c.fillStyle = "#FFFFFF"
+
+ 
 
   //if it's property track then draw anims
   if (track.type == "property") {
@@ -742,7 +822,18 @@ Timeline.prototype.drawTrack = function (track, y) {
       this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, "#999999", true, true, selected ? "#FF0000" : "#666666");
       this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, "#DDDDDD", !first, !last);
     }
+    this.drawRect(0, y - this.trackLabelHeight + 1, this.trackLabelWidth, this.trackLabelHeight - 1,"#EEEEEE");
+    this.c.font = '13px FontAwesome';
+    this.c.fillStyle = "#555555";
+    this.c.fillText('\uf2f2', xshift, y - this.trackLabelHeight * 1.2 / 4);
   }
+
+  //draw track label
+  this.c.font = (track.type == "object") ? '15px  Kanit' : '14.5px KanitLight300'
+  this.c.fillStyle = (track.type == "object") ? "#FFFFFF" : "#555555"
+  this.c.fillText(track.name, xshift + 25, y - this.trackLabelHeight * 1.3 / 4);
+
+
 };
 
 
@@ -755,6 +846,12 @@ Timeline.prototype.drawLine = function (x1, y1, x2, y2, color) {
 };
 
 Timeline.prototype.drawTimelineTicker = function (x1, y1, x2, y2, color, triangleWidth, triangleHeight, triangleColor) {
+
+  //we don't draw the ticker where it's likely to be occluded by the track panel.
+  if(x1 < this.trackLabelWidth){
+    return;
+  }
+
   this.c.strokeStyle = color;
   this.c.lineWidth = 3;
   this.c.beginPath();
