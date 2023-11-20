@@ -767,11 +767,14 @@ Timeline.prototype.drawTimelineTicker = function (x1, y1, x2, y2, color, triangl
   const midX = (x1 + x2) / 2 + 0.5;
   //const yPos = (y1 + y2) / 2 - 94;
 
+  //draw rect
+  this.drawRect((midX- triangleWidth / 8),y1,triangleWidth/4, triangleHeight/1.8,triangleColor)
+
   // Draw the inverted triangle at the midpoint
   this.c.beginPath();
-  this.c.moveTo(midX - triangleWidth / 2, y1 - triangleHeight);
-  this.c.lineTo(midX + triangleWidth / 2, y1 - triangleHeight );
-  this.c.lineTo(midX, y1 +12);
+  this.c.moveTo(midX - triangleWidth / 8 *1.04 , y1 + 7 );
+  this.c.lineTo(midX + triangleWidth / 8 * 1.04 ,y1 + 7 );
+  this.c.lineTo(midX, y1 +18);
   this.c.closePath();
   this.c.fillStyle = triangleColor;
   this.c.fill();
