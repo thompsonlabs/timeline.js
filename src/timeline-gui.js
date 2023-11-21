@@ -38,11 +38,14 @@ Timeline.prototype.initGUI = function () {
   this.timelineEndKey = null; //used to dynamically extend timeline
   this.displayableTracks = [];
   this.timelineTracksColorPalette = [];
+  this.keyframeSpanPattern = null;
+  this.tracksThemeColor = "#EEEEEE"
 
 
   this.prepareFonts();
   this.loadCssStyleSheet("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css") //fontawesome.
   this.prepareTimelineTracksColorPallete();
+  this.loadKeyframeSpanPattern("/src/stripe-pattern.jpg");
   this.initTracks();
   this.load();
 
@@ -534,7 +537,9 @@ Timeline.prototype.updateGUI = function () {
   //time ticker
   //this.drawLine(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000");
   //this.drawTimelineTicker(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000", 40, 12, "#FF0000")
-  this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#AAAAAA", 48, 14, "#AAAAAA")
+ // this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#AAAAAA", 48, 14, "#AAAAAA")
+ this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#999999", 48, 14, "#999999")
+
 
   //function(x1, y1, x2, y2, color, triangleWidth, triangleHeight, triangleColor) 
 
@@ -676,7 +681,8 @@ Timeline.prototype.getTimelineTrackColor = function (trackIndex) {
   //the colors pallete array to ensure we never exceed the number of colors in the pallete
   const effectiveIndex = trackIndex % this.timelineTracksColorPalette.length;
   //return the color at the effective index
-  return this.dimHexColor(this.timelineTracksColorPalette[effectiveIndex],8);
+  return this.timelineTracksColorPalette[effectiveIndex];
+  //return this.dimHexColor(this.timelineTracksColorPalette[effectiveIndex],8);
 
 }
 
@@ -714,6 +720,27 @@ Timeline.prototype.prepareFonts = function () {
 };
 
 
+Timeline.prototype.loadKeyframeSpanPattern = function (patternImagePath) {
+
+  loadImage(patternImagePath).then((img) => {
+
+    // Create a pattern with the loaded image
+    this.keyframeSpanPattern = this.c.createPattern(img, "repeat");
+
+    console.log("Keyframe span pattern was successfully loaded.")
+
+  }).catch((error) => {
+
+    console.log("An error occurred whilst attempting to load keyframe span pattern: "+error)
+
+  });
+
+     
+};
+
+
+
+
 
 Timeline.prototype.drawImage = function(src, x, y, width, height) {
   var img = new Image();
@@ -728,6 +755,18 @@ Timeline.prototype.drawImage = function(src, x, y, width, height) {
 
 
 
+function loadImage(imagePath) {
+  return new Promise(function (resolve, reject) {
+    var img = new Image();
+    img.onload = function () {
+      resolve(img);
+    };
+    img.onerror = function () {
+      reject(new Error("Failed to load image."));
+    };
+    img.src = imagePath;
+  });
+}
 
 
 
@@ -771,6 +810,7 @@ Timeline.prototype.drawTrack = function (track, y) {
     xshift += 10;
     //label color
     this.c.fillStyle = "#555555";
+    this.drawRect(0, y - this.trackLabelHeight + 1, this.canvas.width, this.trackLabelHeight - 1,this.tracksThemeColor);
    
   }
 
@@ -811,6 +851,11 @@ Timeline.prototype.drawTrack = function (track, y) {
 
   //if it's property track then draw anims
   if (track.type == "property") {
+
+     //draw property track keyframe spans. we draw the spans first to 
+     //ensure keyframes are drawn OVER them.
+     this.drawPropertyTrackKeyFrameSpans(track,y);
+
     for (var i = 0; i < track.keys.length; i++) {
       var key = track.keys[i];
       var selected = false;
@@ -822,7 +867,11 @@ Timeline.prototype.drawTrack = function (track, y) {
       this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, "#999999", true, true, selected ? "#FF0000" : "#666666");
       this.drawRombus(this.timeToX(key.time), y - this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, this.trackLabelHeight * 0.5, "#DDDDDD", !first, !last);
     }
-    this.drawRect(0, y - this.trackLabelHeight + 1, this.trackLabelWidth, this.trackLabelHeight - 1,"#EEEEEE");
+
+
+    //draw property track timer icon.
+    //this.drawRect(0, y - this.trackLabelHeight + 1, this.trackLabelWidth, this.trackLabelHeight - 1,"#EEEEEE");
+    this.drawRect(0, y - this.trackLabelHeight + 1, this.trackLabelWidth, this.trackLabelHeight - 1,this.tracksThemeColor);
     this.c.font = '13px FontAwesome';
     this.c.fillStyle = "#555555";
     this.c.fillText('\uf2f2', xshift, y - this.trackLabelHeight * 1.2 / 4);
@@ -833,6 +882,26 @@ Timeline.prototype.drawTrack = function (track, y) {
   this.c.fillStyle = (track.type == "object") ? "#FFFFFF" : "#555555"
   this.c.fillText(track.name, xshift + 25, y - this.trackLabelHeight * 1.3 / 4);
 
+
+};
+
+
+Timeline.prototype.drawPropertyTrackKeyFrameSpans = function (track,y){
+
+  for (var i = 0; i < track.keys.length; i++) {
+
+    //providing this is not the last key...
+    if(i < track.keys.length - 1){
+   
+        //...draw span from current key frame to the next.
+        const currentKeyX = this.timeToX(track.keys[i].time)
+        const nextKeyX = this.timeToX(track.keys[i+1].time)
+        const spanWidth = nextKeyX - currentKeyX;
+        var spanColor = this.getTimelineTrackColor(track.parent.colorPalleteIndex);
+        this.drawPatternedRect(currentKeyX,y - this.trackLabelHeight * 0.8,spanWidth, this.trackLabelHeight * 0.6,spanColor,this.keyframeSpanPattern);
+    }
+
+  }
 
 };
 
@@ -880,6 +949,16 @@ Timeline.prototype.drawTimelineTicker = function (x1, y1, x2, y2, color, triangl
 Timeline.prototype.drawRect = function (x, y, w, h, color) {
   this.c.fillStyle = color;
   this.c.fillRect(x, y, w, h);
+};
+
+Timeline.prototype.drawPatternedRect = function (x, y, w, h, color,pattern) {
+  this.c.fillStyle = color;
+  this.c.fillRect(x, y, w, h);
+  this.c.fillStyle = pattern;
+  this.c.globalAlpha = 0.5;
+  this.c.fillRect(x, y, w, h);
+  this.c.globalAlpha = 1.0;
+
 };
 
 Timeline.prototype.drawCenteredRect = function (x, y, w, h, color) {
