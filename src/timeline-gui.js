@@ -538,7 +538,7 @@ Timeline.prototype.updateGUI = function () {
   //this.drawLine(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000");
   //this.drawTimelineTicker(this.timeToX(this.time) + 20, 0, this.timeToX(this.time) + 20, h, "#FF0000", 40, 12, "#FF0000")
  // this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#AAAAAA", 48, 14, "#AAAAAA")
- this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#999999", 48, 14, "#999999")
+ this.drawTimelineTicker(this.timeToX(this.time), 0, this.timeToX(this.time), h, "#FF0000", 48, 14, "#FF0000")
 
 
   //function(x1, y1, x2, y2, color, triangleWidth, triangleHeight, triangleColor) 
@@ -922,7 +922,7 @@ Timeline.prototype.drawTimelineTicker = function (x1, y1, x2, y2, color, triangl
   }
 
   this.c.strokeStyle = color;
-  this.c.lineWidth = 3;
+  this.c.lineWidth = 2;
   this.c.beginPath();
   this.c.moveTo(x1 + 0.5, y1 + 0.5);
   this.c.lineTo(x2 + 0.5, y2 + 0.5);
