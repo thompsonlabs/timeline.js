@@ -40,6 +40,7 @@ Timeline.prototype.initGUI = function () {
   this.timelineTracksColorPalette = [];
   this.keyframeSpanPattern = null;
   this.tracksThemeColor = "#EEEEEE"
+  //this.tracksThemeColor = "#DDDDDD"
 
 
   this.prepareFonts();
